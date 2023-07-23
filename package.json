@@ -32,6 +32,7 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "prepack": "bob build",
     "release": "release-it",
+    "release-no-increment": "release-it --no-increment",
     "example": "yarn --cwd example",
     "build:android": "cd example/android && ./gradlew assembleDebug --no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a",
     "build:ios": "cd example/ios && xcodebuild -workspace IsKeyboardConnectedExample.xcworkspace -scheme IsKeyboardConnectedExample -configuration Debug -sdk iphonesimulator CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ GCC_OPTIMIZATION_LEVEL=0 GCC_PRECOMPILE_PREFIX_HEADER=YES ASSETCATALOG_COMPILER_OPTIMIZATION=time DEBUG_INFORMATION_FORMAT=dwarf COMPILER_INDEX_STORE_ENABLE=NO",
@@ -163,6 +164,6 @@
   "codegenConfig": {
     "name": "RNIsKeyboardConnectedSpec",
     "type": "modules",
-    "jsSrcsDir": "src"
+    "jsSrcsDir": "src/nativeSpecs"
   }
 }

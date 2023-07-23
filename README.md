@@ -2,20 +2,76 @@
 
 React Native library for checking whether a keyboard is connected
 
-## Installation
+# Installation
+1. Download package with npm or yarn
 
-```sh
-npm install react-native-is-keyboard-connected
 ```
+npm i react-native-is-keyboard-connected
+```
+```
+yarn add react-native-is-keyboard-connected
+```
+
+
+2. Android only
+
+Add to the  `MainActivity.java` lines:
+
+```
+  //android/app/src/main/java/com/project-name/MainActivity.java
+
+  ...
+  import android.content.Intent;
+  import android.content.res.Configuration;
+  ...
+  
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+    Intent intent = new Intent("onConfigurationChanged");
+    intent.putExtra("newConfig", newConfig);
+    this.sendBroadcast(intent);
+  }
+
+```
+
+3. iOS only
+
+Install pods
+```
+cd ios && pod install
+```
+
+Link keyboard(Game) binary with libraries
+
+- Open xcode
+- Select folder in the project bar
+- Select target project
+- Select `Build Phases`
+- Expand `Link Binary With Libraries`
+- Press plus icon
+- You can search for `Game`
+- Select `GameController.framework`, `GameKit.framework`, `GameplayKit.framework`
+
+See screenshot below:
+<img src="/.github/images/link-binary-example.png" height="500" />
+
 
 ## Usage
 
 ```js
-import { multiply } from 'react-native-is-keyboard-connected';
+import { isKeyboardConnected, keyboardStatusListener, useIsKeyboardConnected } from 'react-native-is-keyboard-connected';
 
 // ...
 
-const result = await multiply(3, 7);
+const isKeyboardConnected = useIsKeyboardConnected();
+
+
+// Or you can handle it by your own
+ 
+const removeListenerFn = keyboardStatusListener((e) => setResult(e.status));
+isKeyboardConnected().then((isConnected) => setResult(isConnected));
+
 ```
 
 ## Contributing
