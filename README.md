@@ -1,6 +1,7 @@
 # react-native-is-keyboard-connected
 
 React Native library for checking whether a keyboard is connected
+The `new` and `old` architectures are supported!
 
 # Installation
 1. Download package with npm or yarn
