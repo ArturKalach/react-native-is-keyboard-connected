@@ -82,10 +82,12 @@ public class IsKeyboardConnectedModule extends com.iskeyboardconnected.IsKeyboar
 
   }
 
+  @Override
   @ReactMethod
-  public void removeListeners(Integer count) {
+  public void removeListeners(double count) {
 
   }
+
 
   @Override
   public void onHostResume() {
