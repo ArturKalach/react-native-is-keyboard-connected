@@ -1,11 +1,16 @@
 package com.iskeyboardconnectedexample;
 
+import android.content.Intent;
+import android.content.res.Configuration;
+
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 
 public class MainActivity extends ReactActivity {
+  private final static String ON_CONFIGURATION_CHANGED = "onConfigurationChanged";
+  private final static String NEW_CONFIG = "newConfig";
 
   /**
    * Returns the name of the main component registered from JavaScript. This is used to schedule
@@ -24,9 +29,17 @@ public class MainActivity extends ReactActivity {
   @Override
   protected ReactActivityDelegate createReactActivityDelegate() {
     return new DefaultReactActivityDelegate(
-        this,
-        getMainComponentName(),
-        // If you opted-in for the New Architecture, we enable the Fabric Renderer.
-        DefaultNewArchitectureEntryPoint.getFabricEnabled());
+      this,
+      getMainComponentName(),
+      // If you opted-in for the New Architecture, we enable the Fabric Renderer.
+      DefaultNewArchitectureEntryPoint.getFabricEnabled());
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+    final Intent intent = new Intent(ON_CONFIGURATION_CHANGED);
+    intent.putExtra(NEW_CONFIG, newConfig);
+    this.sendBroadcast(intent);
   }
 }
