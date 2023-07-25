@@ -4,7 +4,8 @@ import { TurboModuleRegistry } from 'react-native';
 export interface Spec extends TurboModule {
   isKeyboardConnected: () => Promise<boolean>;
 
-  addListener: (eventType: string) => void;
+  // RCTEventEmitter
+  addListener: (eventName: string) => void;
   removeListeners: (count: number) => void;
 }
 
