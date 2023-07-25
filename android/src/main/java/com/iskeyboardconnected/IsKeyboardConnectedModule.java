@@ -30,6 +30,9 @@ public class IsKeyboardConnectedModule extends com.iskeyboardconnected.IsKeyboar
   private final ReactApplicationContext reactContext;
   private final BroadcastReceiver receiver;
 
+  private boolean hasListeners = false;
+  private boolean isBroadcastRegistered = false;
+
   IsKeyboardConnectedModule(ReactApplicationContext context) {
     super(context);
     reactContext = context;
@@ -42,7 +45,6 @@ public class IsKeyboardConnectedModule extends com.iskeyboardconnected.IsKeyboar
         keyboardChanged(newConfig.hardKeyboardHidden == HARDKEYBOARDHIDDEN_NO);
       }
     };
-    keyboardChanged(isConnected());
   }
 
   private boolean isConnected() {
@@ -52,9 +54,33 @@ public class IsKeyboardConnectedModule extends com.iskeyboardconnected.IsKeyboar
   }
 
   public void keyboardChanged(Boolean info) {
-    final WritableMap params = Arguments.createMap();
-    params.putBoolean(EVENT_PROP, info);
-    sendEvent(reactContext, KEYBOARD_STATUS_EVENT, params);
+    if (hasListeners) {
+      final WritableMap params = Arguments.createMap();
+      params.putBoolean(EVENT_PROP, info);
+      sendEvent(reactContext, KEYBOARD_STATUS_EVENT, params);
+    }
+  }
+
+  private void registerBroadcast() {
+    if (isBroadcastRegistered) return;
+    isBroadcastRegistered = true;
+    final Activity activity = reactContext.getCurrentActivity();
+
+    if (activity != null) {
+      activity.registerReceiver(receiver, new IntentFilter(ON_CONFIGURATION_CHANGED));
+    }
+  }
+
+  private void unregisterBroadcast() {
+    if (!isBroadcastRegistered) return;
+    isBroadcastRegistered = false;
+
+    final Activity activity = reactContext.getCurrentActivity();
+    if (activity == null) return;
+    try {
+      activity.unregisterReceiver(receiver);
+    } catch (java.lang.IllegalArgumentException e) {
+    }
   }
 
   private void sendEvent(ReactApplicationContext reactContext,
@@ -77,40 +103,32 @@ public class IsKeyboardConnectedModule extends com.iskeyboardconnected.IsKeyboar
     promise.resolve(isConnected);
   }
 
+  @Override
   @ReactMethod
   public void addListener(String eventName) {
-
+    hasListeners = true;
+    this.registerBroadcast();
   }
 
   @Override
   @ReactMethod
   public void removeListeners(double count) {
-
+    hasListeners = false;
+    this.unregisterBroadcast();
   }
-
 
   @Override
   public void onHostResume() {
-    final Activity activity = reactContext.getCurrentActivity();
-
-    if (activity == null) {
-      return;
-    }
-    activity.registerReceiver(receiver, new IntentFilter(ON_CONFIGURATION_CHANGED));
+    this.registerBroadcast();
   }
 
   @Override
   public void onHostPause() {
-    final Activity activity = reactContext.getCurrentActivity();
-    if (activity == null) return;
-    try {
-      activity.unregisterReceiver(receiver);
-    } catch (java.lang.IllegalArgumentException e) {
-    }
+    this.unregisterBroadcast();
   }
 
   @Override
   public void onHostDestroy() {
-
+    this.unregisterBroadcast();
   }
 }
