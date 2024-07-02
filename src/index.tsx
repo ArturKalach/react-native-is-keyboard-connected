@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { NativeModules, Platform, NativeEventEmitter } from 'react-native';
 
 const KEYBOARD_STATUS_EVENT = 'keyboardStatus';
+const GC_FRAMEWORK_LINKING_ERROR = `GC_FRAMEWORK_LINKING_ERROR`;
 
 const LINKING_ERROR =
   `The package 'react-native-is-keyboard-connected' doesn't seem to be linked. Make sure: \n\n` +
@@ -42,17 +43,23 @@ export const keyboardStatusListener = (callback: StatusCallback) => {
   return () => eventListener.remove();
 };
 
-export const useIsKeyboardConnected = () => {
+export const useIsKeyboardConnected = (ignoreWarn = false) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     const removeListener = keyboardStatusListener((e) =>
       setIsConnected(e.status)
     );
-    isKeyboardConnected().then((status: boolean) => setIsConnected(status));
+    isKeyboardConnected()
+      .then((status: boolean) => setIsConnected(status))
+      .catch((e) => {
+        if (!ignoreWarn && e.code === GC_FRAMEWORK_LINKING_ERROR) {
+          console.error(e.message);
+        }
+      });
 
     return removeListener;
-  }, []);
+  }, [ignoreWarn]);
 
   return isConnected;
 };
