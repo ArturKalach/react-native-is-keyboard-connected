@@ -4,41 +4,21 @@ React Native library for checking whether a keyboard is connected
 The `new` and `old` architectures are supported!
 
 # Installation
+
 1. Download package with npm or yarn
 
 ```
 npm i react-native-is-keyboard-connected
 ```
+
 ```
 yarn add react-native-is-keyboard-connected
 ```
 
-
-2. Android only
-
-Add to the  `MainActivity.java` lines:
-
-```
-  //android/app/src/main/java/com/project-name/MainActivity.java
-
-  ...
-  import android.content.Intent;
-  import android.content.res.Configuration;
-  ...
-  
-  @Override
-  public void onConfigurationChanged(Configuration newConfig) {
-    super.onConfigurationChanged(newConfig);
-    Intent intent = new Intent("onConfigurationChanged");
-    intent.putExtra("newConfig", newConfig);
-    this.sendBroadcast(intent);
-  }
-
-```
-
-3. iOS only
+2. iOS only
 
 Install pods
+
 ```
 cd ios && pod install
 ```
@@ -52,27 +32,37 @@ Link keyboard(Game) binary with libraries
 - Expand `Link Binary With Libraries`
 - Press plus icon
 - You can search for `Game`
-- Select `GameController.framework`, `GameKit.framework`, `GameplayKit.framework`
+- Select `GameController.framework`,
 
-See screenshot below:
-<img src="/.github/images/link-binary-example.png" height="500" />
+<details>
+  <summary>Xcode screenshot</summary>
+  <img src="/.github/images/link-binary-example.png" height="500" />
+</details>
 
+<details>
+  <summary>Why linking is needed</summary>
+
+Unfortunately, the GameController framework is the only viable solution to obtain information about the keyboard and its connection. While there are other potential solutions, they are mostly workarounds and could be rejected by the App Store review process.
+
+</details>
 
 ## Usage
 
 ```js
-import { isKeyboardConnected, keyboardStatusListener, useIsKeyboardConnected } from 'react-native-is-keyboard-connected';
+import {
+  isKeyboardConnected,
+  keyboardStatusListener,
+  useIsKeyboardConnected,
+} from 'react-native-is-keyboard-connected';
 
 // ...
 
 const isKeyboardConnected = useIsKeyboardConnected();
 
-
 // Or you can handle it by your own
- 
+
 const removeListenerFn = keyboardStatusListener((e) => setResult(e.status));
 isKeyboardConnected().then((isConnected) => setResult(isConnected));
-
 ```
 
 ## Contributing

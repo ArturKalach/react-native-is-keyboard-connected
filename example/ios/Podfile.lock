@@ -932,7 +932,7 @@ PODS:
   - React-jsinspector (0.72.3)
   - React-logger (0.72.3):
     - glog
-  - react-native-is-keyboard-connected (0.1.0):
+  - react-native-is-keyboard-connected (1.0.0):
     - hermes-engine
     - RCT-Folly (= 2021.07.22.00)
     - RCTRequired
@@ -1291,12 +1291,12 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 59d1eb03af7d30b7d66589c410f13151271e8006
   React-jsinspector: b511447170f561157547bc0bef3f169663860be7
   React-logger: c5b527272d5f22eaa09bb3c3a690fee8f237ae95
-  react-native-is-keyboard-connected: 4dc0e5be094517d445d27d441da57548c20c77fc
+  react-native-is-keyboard-connected: 656e7a4b890db6407752fa6eb1de3aa2fbde2ec3
   React-NativeModulesApple: c57f3efe0df288a6532b726ad2d0322a9bf38472
   React-perflogger: 6bd153e776e6beed54c56b0847e1220a3ff92ba5
   React-RCTActionSheet: c0b62af44e610e69d9a2049a682f5dba4e9dff17
   React-RCTAnimation: f9bf9719258926aea9ecb8a2aa2595d3ff9a6022
-  React-RCTAppDelegate: d52ce3c0d9440c303315229dba5a9e5761edb81c
+  React-RCTAppDelegate: f3e7af01d6ac2e9d76cc452055957ed2bbf86888
   React-RCTBlob: c4f1e69a6ef739aa42586b876d637dab4e3b5bed
   React-RCTFabric: 125e7d77057cb62f94e79ac977fd68be042a3bc5
   React-RCTImage: e5798f01aba248416c02a506cf5e6dfcba827638
@@ -1316,4 +1316,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: caa70ae2da729444a5d3761843008f740136fa0c
 
-COCOAPODS: 1.12.1
+COCOAPODS: 1.15.2
