@@ -25,13 +25,10 @@ public class IsKeyboardConnectedModule extends com.iskeyboardconnected.IsKeyboar
   public static final String KEYBOARD_STATUS_EVENT = "keyboardStatus";
   public static final String EVENT_PROP = "status";
   public static final String NAME = "IsKeyboardConnected";
-  private final String ON_CONFIGURATION_CHANGED = "onConfigurationChanged";
-  private final String NEW_CONFIG = "newConfig";
   private final ReactApplicationContext reactContext;
   private final BroadcastReceiver receiver;
-
-  private boolean hasListeners = false;
   private boolean isBroadcastRegistered = false;
+  private int listenerCount = 0;
 
   IsKeyboardConnectedModule(ReactApplicationContext context) {
     super(context);
@@ -41,46 +38,24 @@ public class IsKeyboardConnectedModule extends com.iskeyboardconnected.IsKeyboar
     receiver = new BroadcastReceiver() {
       @Override
       public void onReceive(Context context, Intent intent) {
-        final Configuration newConfig = intent.getParcelableExtra(NEW_CONFIG);
-        keyboardChanged(newConfig.hardKeyboardHidden == HARDKEYBOARDHIDDEN_NO);
+        if (Intent.ACTION_CONFIGURATION_CHANGED.equals(intent.getAction())) {
+          Configuration newConfig = context.getResources().getConfiguration();
+          keyboardChanged(newConfig.hardKeyboardHidden == HARDKEYBOARDHIDDEN_NO);
+        }
       }
     };
+    keyboardChanged(isConnected());
   }
 
   private boolean isConnected() {
     final int keyboard = reactContext.getResources().getConfiguration().keyboard;
-    boolean isConnected = keyboard != KEYBOARD_UNDEFINED && keyboard != KEYBOARD_NOKEYS;
-    return isConnected;
+    return keyboard != KEYBOARD_UNDEFINED && keyboard != KEYBOARD_NOKEYS;
   }
 
   public void keyboardChanged(Boolean info) {
-    if (hasListeners) {
-      final WritableMap params = Arguments.createMap();
-      params.putBoolean(EVENT_PROP, info);
-      sendEvent(reactContext, KEYBOARD_STATUS_EVENT, params);
-    }
-  }
-
-  private void registerBroadcast() {
-    if (isBroadcastRegistered) return;
-    isBroadcastRegistered = true;
-    final Activity activity = reactContext.getCurrentActivity();
-
-    if (activity != null) {
-      activity.registerReceiver(receiver, new IntentFilter(ON_CONFIGURATION_CHANGED));
-    }
-  }
-
-  private void unregisterBroadcast() {
-    if (!isBroadcastRegistered) return;
-    isBroadcastRegistered = false;
-
-    final Activity activity = reactContext.getCurrentActivity();
-    if (activity == null) return;
-    try {
-      activity.unregisterReceiver(receiver);
-    } catch (java.lang.IllegalArgumentException e) {
-    }
+    final WritableMap params = Arguments.createMap();
+    params.putBoolean(EVENT_PROP, info);
+    sendEvent(reactContext, KEYBOARD_STATUS_EVENT, params);
   }
 
   private void sendEvent(ReactApplicationContext reactContext,
@@ -103,32 +78,61 @@ public class IsKeyboardConnectedModule extends com.iskeyboardconnected.IsKeyboar
     promise.resolve(isConnected);
   }
 
+  private void registerBroadcast() {
+    if (isBroadcastRegistered) return;
+    isBroadcastRegistered = true;
+    final Activity activity = reactContext.getCurrentActivity();
+
+    if (activity != null) {
+      activity.registerReceiver(receiver, new IntentFilter(Intent.ACTION_CONFIGURATION_CHANGED));
+    }
+  }
+
+  private void unregisterBroadcast() {
+    if (!isBroadcastRegistered) return;
+    isBroadcastRegistered = false;
+
+    final Activity activity = reactContext.getCurrentActivity();
+    if (activity == null) return;
+    try {
+      activity.unregisterReceiver(receiver);
+    } catch (java.lang.IllegalArgumentException e) {
+    }
+  }
+
   @Override
   @ReactMethod
   public void addListener(String eventName) {
-    hasListeners = true;
-    this.registerBroadcast();
+    if (listenerCount == 0) {
+      registerBroadcast();
+    }
+
+    listenerCount += 1;
   }
 
   @Override
   @ReactMethod
   public void removeListeners(double count) {
-    hasListeners = false;
-    this.unregisterBroadcast();
+    listenerCount -= count;
+    if (listenerCount == 0) {
+      unregisterBroadcast();
+    }
   }
 
   @Override
   public void onHostResume() {
-    this.registerBroadcast();
+    if (listenerCount != 0) {
+      registerBroadcast();
+    }
   }
 
   @Override
   public void onHostPause() {
-    this.unregisterBroadcast();
+    unregisterBroadcast();
   }
 
   @Override
   public void onHostDestroy() {
-    this.unregisterBroadcast();
+
   }
 }

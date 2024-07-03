@@ -34,12 +34,4 @@ public class MainActivity extends ReactActivity {
       // If you opted-in for the New Architecture, we enable the Fabric Renderer.
       DefaultNewArchitectureEntryPoint.getFabricEnabled());
   }
-
-  @Override
-  public void onConfigurationChanged(Configuration newConfig) {
-    super.onConfigurationChanged(newConfig);
-    final Intent intent = new Intent(ON_CONFIGURATION_CHANGED);
-    intent.putExtra(NEW_CONFIG, newConfig);
-    this.sendBroadcast(intent);
-  }
 }
