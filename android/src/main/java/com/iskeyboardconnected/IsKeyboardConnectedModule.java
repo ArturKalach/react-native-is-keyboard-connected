@@ -25,8 +25,6 @@ public class IsKeyboardConnectedModule extends com.iskeyboardconnected.IsKeyboar
   public static final String KEYBOARD_STATUS_EVENT = "keyboardStatus";
   public static final String EVENT_PROP = "status";
   public static final String NAME = "IsKeyboardConnected";
-  private final String ON_CONFIGURATION_CHANGED = "onConfigurationChanged";
-  private final String NEW_CONFIG = "newConfig";
   private final ReactApplicationContext reactContext;
   private final BroadcastReceiver receiver;
   private boolean isBroadcastRegistered = false;
@@ -123,14 +121,14 @@ public class IsKeyboardConnectedModule extends com.iskeyboardconnected.IsKeyboar
 
   @Override
   public void onHostResume() {
-    if(listenerCount != 0) {
+    if (listenerCount != 0) {
       registerBroadcast();
     }
   }
 
   @Override
   public void onHostPause() {
-   unregisterBroadcast();
+    unregisterBroadcast();
   }
 
   @Override

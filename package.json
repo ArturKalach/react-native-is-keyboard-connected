@@ -1,6 +1,6 @@
 {
   "name": "react-native-is-keyboard-connected",
-  "version": "1.0.0-rc",
+  "version": "1.0.0",
   "description": "React Native library for checking whether a keyboard is connected",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",

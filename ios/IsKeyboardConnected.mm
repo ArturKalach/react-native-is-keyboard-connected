@@ -68,7 +68,7 @@ RCT_EXPORT_METHOD(isKeyboardConnected:(RCTPromiseResolveBlock)resolve
             bool isConnected = [GCKeyboardClass coalescedKeyboard] != nil;
             resolve(isConnected ? @(YES) : @(NO));
         } else {
-            reject(@"GC_FRAMEWORK_LINKING_ERROR", @"The GameController framework is not linked. You can read more about this in the react-native-is-keyboard-connected Readme.md", nil);
+            reject(@"GC_FRAMEWORK_LINKING_ERROR", @"The GameController framework is not linked. Please verify the iOS section in the react-native-is-keyboard-connected Readme.md", nil);
         }
     } else {
         reject(@"IOS_VERSION_IS_NOT_SUPPORTED", @"iOS version less than 14.0", nil);

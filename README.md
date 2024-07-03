@@ -34,8 +34,17 @@ Link keyboard(Game) binary with libraries
 - You can search for `Game`
 - Select `GameController.framework`,
 
-See screenshot below:
-<img src="/.github/images/link-binary-example.png" height="500" />
+<details>
+  <summary>Xcode screenshot</summary>
+  <img src="/.github/images/link-binary-example.png" height="500" />
+</details>
+
+<details>
+  <summary>Why linking is needed</summary>
+
+Unfortunately, the GameController framework is the only viable solution to obtain information about the keyboard and its connection. While there are other potential solutions, they are mostly workarounds and could be rejected by the App Store review process.
+
+</details>
 
 ## Usage
 
