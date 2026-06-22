@@ -1,0 +1,102 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this is
+
+`react-native-is-keyboard-connected` is a small, single-purpose React Native
+**native module** that reports whether a physical/hardware keyboard is connected
+and emits an event when that connection state changes. It supports both the **New
+Architecture** (TurboModules) and the **Old Architecture** (bridge module) from
+the same source.
+
+This package lives inside the `a11y-loop` working directory but is **independent**
+of the three packages described in the parent `../CLAUDE.md` (it has its own git
+history, version, and toolchain). Don't apply the re-merge goal from the parent
+workspace here.
+
+## Commands
+
+```bash
+yarn install
+yarn typecheck      # tsc --noEmit
+yarn lint           # eslint over **/*.{js,ts,tsx}
+yarn test           # jest (preset react-native) — note: only a todo test exists
+yarn test <file>    # single file; or  yarn test -t "name"
+yarn prepack        # build lib/ via react-native-builder-bob (run after src/ changes)
+yarn clean          # del-cli native build dirs
+
+# Example app (the only Yarn workspace; drives the native code)
+yarn bootstrap              # yarn example && yarn install && yarn example pods
+yarn example start         # Metro
+yarn example ios           # iOS  (pods installed via `yarn example pods`)
+yarn example android       # Android
+
+# Native compile checks without the JS dev server
+yarn build:ios             # xcodebuild the example workspace
+yarn build:android         # gradle assembleDebug (arm64-v8a)
+```
+
+Toolchain: **Yarn** (`.yarnrc`), **Node** `>= 16` (`.nvmrc` pins the dev version).
+**lefthook** pre-commit runs lint + typecheck; commits must follow **Conventional
+Commits** (commitlint). Releases are cut with **`release-it`** (`yarn release`),
+which publishes to npm, tags `v${version}`, and generates a GitHub release +
+changelog.
+
+## Architecture
+
+The JS↔native contract is one method plus an event:
+
+- `isKeyboardConnected(): Promise<boolean>` — one-shot query.
+- `keyboardStatus` event with `{ status: boolean }` — emitted on connect/disconnect.
+
+### JS layer — [src/index.tsx](src/index.tsx)
+- Resolves the native module two ways: TurboModule via
+  [src/nativeSpecs/NativeIsKeyboardConnected.ts](src/nativeSpecs/NativeIsKeyboardConnected.ts)
+  when `global.__turboModuleProxy` exists, otherwise `NativeModules.IsKeyboardConnected`.
+  A `Proxy` throws a helpful `LINKING_ERROR` if the module is missing.
+- Public API: `isKeyboardConnected`, `keyboardStatusListener(callback)` (wraps a
+  `NativeEventEmitter`, returns an unsubscribe fn), and the `useIsKeyboardConnected`
+  hook (seeds state from the one-shot query + subscribes to the event).
+
+### Codegen spec — the source of truth for the native contract
+`codegenConfig` in [package.json](package.json) (`name: RNIsKeyboardConnectedSpec`,
+`jsSrcsDir: src/nativeSpecs`) generates the New-Arch native interfaces from the
+`.ts` spec. The spec includes the `addListener`/`removeListeners` event-emitter
+methods. **Any change to the spec must be mirrored in both iOS and Android native
+code.**
+
+### iOS — [ios/IsKeyboardConnected.mm](ios/IsKeyboardConnected.mm)
+- An `RCTEventEmitter` subclass. The same `.mm` serves both architectures; the
+  header picks the protocol (`NativeIsKeyboardConnectedSpec` vs `RCTBridgeModule`)
+  via `#ifdef RCT_NEW_ARCH_ENABLED`, and `getTurboModule:` is compiled only for
+  New Arch.
+- Connection state comes from Apple's **GameController** framework
+  (`GCKeyboard.coalescedKeyboard`, iOS 14+), observing
+  `GCKeyboardDidConnect/DidDisconnectNotification`. `GCKeyboard` is resolved by
+  string (`NSClassFromString`) so a missing framework link rejects with
+  `GC_FRAMEWORK_LINKING_ERROR` instead of crashing; iOS < 14 rejects with
+  `IOS_VERSION_IS_NOT_SUPPORTED`.
+- The podspec declares `s.frameworks = 'GameController'`, so GameController is
+  linked automatically. (The README still documents a manual "Link Binary With
+  Libraries" step as a fallback for setups where auto-linking doesn't take.)
+
+### Android — [android/src/main/java/com/iskeyboardconnected/](android/src/main/java/com/iskeyboardconnected/)
+- `IsKeyboardConnectedModule` extends an `IsKeyboardConnectedSpec` base that has
+  **two implementations swapped at build time**: `src/newarch/` (extends the
+  codegen `NativeIsKeyboardConnectedSpec`) and `src/oldarch/` (extends
+  `ReactContextBaseJavaModule` and declares the abstract methods by hand). Keep
+  both in sync with the JS spec.
+- Detection reads `Configuration.keyboard` (connected when not `KEYBOARD_UNDEFINED`
+  / `KEYBOARD_NOKEYS`). Change events come from a `BroadcastReceiver` on
+  `ACTION_CONFIGURATION_CHANGED`, registered lazily on first listener and
+  unregistered on last listener / `onHostPause` (via `LifecycleEventListener`).
+
+## Conventions
+
+- `lib/` is generated by **react-native-builder-bob** (commonjs + module +
+  typescript targets) — never edit by hand; run `yarn prepack` after `src/` changes.
+- Prettier is enforced through ESLint: single quotes, 2-space tabs, `es5` trailing
+  commas, no tabs.
+</content>
+</invoke>

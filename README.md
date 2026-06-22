@@ -1,69 +1,137 @@
-# react-native-is-keyboard-connected
+![react-native-is-keyboard-connected](/.github/images/react-native-is-keyboard-connected.png)
 
-React Native library for checking whether a keyboard is connected
-The `new` and `old` architectures are supported!
+# React Native Is Keyboard Connected
 
-# Installation
+Native-first React Native module that reports whether a **physical (hardware) keyboard**
+is connected, and emits an event whenever that connection state changes — on iOS and
+Android.
 
-1. Download package with npm or yarn
+- 🔌 **Connection status** — one-shot `isKeyboardConnected()` query
+- 📡 **Live updates** — subscribe to connect / disconnect events
+- ⚛️ **Hook** — `useIsKeyboardConnected()` for drop-in React state
+- ⚡ New Architecture · Old Architecture · Bridgeless
 
-```
-npm i react-native-is-keyboard-connected
-```
+> [!TIP]
+> Need more than connection status? This module is also bundled — alongside screen-reader
+> focus order, physical-keyboard support, and iOS accessibility containers — into the
+> all-in-one [`react-native-a11y`](https://www.npmjs.com/package/react-native-a11y)
+> toolkit. Install the focused package for just this capability, or `react-native-a11y`
+> for the complete set.
 
-```
+## Installation
+
+```sh
 yarn add react-native-is-keyboard-connected
-```
-
-2. iOS only
-
-Install pods
-
-```
 cd ios && pod install
 ```
 
-Link keyboard(Game) binary with libraries
-
-- Open xcode
-- Select folder in the project bar
-- Select target project
-- Select `Build Phases`
-- Expand `Link Binary With Libraries`
-- Press plus icon
-- You can search for `Game`
-- Select `GameController.framework`,
+That's it — on iOS the **GameController** framework is linked automatically via the
+podspec. No manual "Link Binary With Libraries" step is required.
 
 <details>
-  <summary>Xcode screenshot</summary>
-  <img src="/.github/images/link-binary-example.png" height="500" />
-</details>
+  <summary>Why GameController?</summary>
 
-<details>
-  <summary>Why linking is needed</summary>
-
-Unfortunately, the GameController framework is the only viable solution to obtain information about the keyboard and its connection. While there are other potential solutions, they are mostly workarounds and could be rejected by the App Store review process.
+GameController is the only App Store–safe way to obtain hardware keyboard connection
+status (`GCKeyboard`, iOS 14+). Other approaches are workarounds that risk rejection
+during App Store review.
 
 </details>
 
 ## Usage
 
-```js
+### Hardware keyboard
+
+Backed by the native module (GameController on iOS, `Configuration` on Android).
+
+```tsx
 import {
   isKeyboardConnected,
   keyboardStatusListener,
   useIsKeyboardConnected,
+  useIsKeyboardConnectedRef,
 } from 'react-native-is-keyboard-connected';
 
-// ...
+// Hook — re-renders when a keyboard connects or disconnects
+const connected = useIsKeyboardConnected();
 
-const isKeyboardConnected = useIsKeyboardConnected();
+// Ref hook — same live value without re-rendering (read `ref.current` in callbacks)
+const connectedRef = useIsKeyboardConnectedRef();
 
-// Or you can handle it by your own
-
-const removeListenerFn = keyboardStatusListener((e) => setResult(e.status));
+// Or drive it yourself:
+// one-shot query
 isKeyboardConnected().then((isConnected) => setResult(isConnected));
+
+// subscribe to changes — returns an unsubscribe function
+const removeListener = keyboardStatusListener((e) => setResult(e.status));
 ```
+
+### Screen reader
+
+> **Note:** These helpers only wrap React Native's default
+> [`AccessibilityInfo`](https://reactnative.dev/docs/accessibilityinfo) API — no
+> native module and no extra linking. They're syntax sugar that mirrors the
+> keyboard API (same `{ status }` listener payload) so both can be used the same way.
+
+```tsx
+import {
+  isScreenReaderEnabled,
+  screenReaderStatusListener,
+  useIsScreenReaderEnabled,
+  useIsScreenReaderEnabledRef,
+} from 'react-native-is-keyboard-connected';
+
+// Hook — re-renders when VoiceOver / TalkBack is toggled
+const enabled = useIsScreenReaderEnabled();
+
+// Ref hook — same live value without re-rendering
+const enabledRef = useIsScreenReaderEnabledRef();
+
+// Or drive it yourself:
+isScreenReaderEnabled().then((isEnabled) => setResult(isEnabled));
+
+const removeListener = screenReaderStatusListener((e) => setResult(e.status));
+```
+
+## API
+
+### Hardware keyboard (native module)
+
+| Export | Purpose |
+| :-- | :-- |
+| `useIsKeyboardConnected()` | Hook returning the current connection state, updated on change. |
+| `useIsKeyboardConnectedRef()` | Ref variant — `.current` holds the latest state without re-rendering. |
+| `isKeyboardConnected()` | `Promise<boolean>` — one-shot query of the current state. |
+| `keyboardStatusListener(cb)` | Subscribe to `{ status: boolean }` change events; returns an unsubscribe function. |
+
+### Screen reader (wraps RN `AccessibilityInfo`)
+
+| Export | Purpose |
+| :-- | :-- |
+| `useIsScreenReaderEnabled()` | Hook returning whether a screen reader is enabled, updated on change. |
+| `useIsScreenReaderEnabledRef()` | Ref variant — `.current` holds the latest state without re-rendering. |
+| `isScreenReaderEnabled()` | `Promise<boolean>` — one-shot query of the current state. |
+| `screenReaderStatusListener(cb)` | Subscribe to `{ status: boolean }` change events; returns an unsubscribe function. |
+
+## Architecture support
+
+| Capability | Supported |
+| :-- | :-- |
+| New Architecture (Fabric / Turbo Modules) | ✅ |
+| Old Architecture (Bridge) | ✅ |
+| Bridgeless mode | ✅ |
+
+## Migrating from 1.0.0
+
+`1.1.0` is **backward compatible** — no breaking changes. `isKeyboardConnected`,
+`keyboardStatusListener`, and `useIsKeyboardConnected` keep the same signatures,
+so existing code needs no changes.
+
+New in `1.1.0` (all additive):
+
+- `useIsKeyboardConnectedRef` — ref variant of `useIsKeyboardConnected`.
+- `isScreenReaderEnabled` / `screenReaderStatusListener` /
+  `useIsScreenReaderEnabled` / `useIsScreenReaderEnabledRef` — screen-reader
+  helpers over RN's `AccessibilityInfo` (see the [note](#screen-reader) above).
 
 ## Contributing
 
