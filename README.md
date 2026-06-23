@@ -2,6 +2,10 @@
 
 # React Native Is Keyboard Connected
 
+<div>
+  <img align="right" width="35%" src="/.github/images/react-native-is-keyboard-connected-example.gif" alt="Demo of a React Native app reacting to a physical keyboard connecting and disconnecting">
+</div>
+
 Native-first React Native module that reports whether a **physical (hardware) keyboard**
 is connected, and emits an event whenever that connection state changes — on iOS and
 Android.
